@@ -1,0 +1,112 @@
+:root {
+  color-scheme: light dark;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 14px 14px 16px;
+  color: #111;
+  background: #fff;
+}
+
+header strong {
+  font-size: 17px;
+}
+
+header p,
+.fine,
+#status,
+.label {
+  margin: 4px 0 0;
+  color: #5c5c5c;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.label {
+  margin-top: 12px;
+}
+
+.languages {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.languages button,
+button,
+a#open-app {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 15px;
+  min-height: 40px;
+  padding: 8px 6px;
+}
+
+.languages button {
+  background: #ececec;
+  color: inherit;
+}
+
+.languages button[aria-pressed="true"] {
+  background: #e24a36;
+  color: #fff;
+}
+
+button,
+a#open-app {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: #e24a36;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+button.quiet {
+  background: transparent;
+  color: #5c5c5c;
+}
+
+button:disabled {
+  opacity: 0.55;
+}
+
+#status {
+  min-height: 2.7em;
+  margin-top: 10px;
+}
+
+.fine {
+  margin-top: 8px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: #f2f2f2;
+    background: #1c1c1e;
+  }
+
+  header p,
+  .fine,
+  #status,
+  .label,
+  button.quiet {
+    color: #b0b0b5;
+  }
+
+  .languages button {
+    background: #2c2c2e;
+    color: #f2f2f2;
+  }
+}

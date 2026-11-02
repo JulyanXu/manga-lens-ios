@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Manga Lens",
+  "description": "在 Safari 里把当前画面上的日语、韩语或英语译成简体中文。识别和翻译在这台 iPhone 上完成。",
+  "version": "0.1.0",
+  "icons": {
+    "48": "icon-48.png",
+    "96": "icon-96.png",
+    "128": "icon-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "翻译当前页",
+    "default_icon": {
+      "48": "icon-48.png",
+      "96": "icon-96.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "permissions": ["nativeMessaging", "activeTab", "scripting", "storage"],
+  "host_permissions": ["http://*/*", "https://*/*"]
+}

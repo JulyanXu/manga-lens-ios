@@ -7,6 +7,17 @@
 	  不设置 WKAppBoundDomains，也不按站点做白名单或适配器。
 	  其余 Bundle / 启动屏 / 方向键由 GENERATE_INFOPLIST_FILE 合并进来。
 	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.julyanxu.MangaLens</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mangalens</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var pageCache = PageTranslationCache()
     @StateObject private var session = PageSession()
     @FocusState private var addressFocused: Bool
+    @Environment(\.scenePhase) private var scenePhase
 
     private let logger = Logger(subsystem: "com.julyanxu.MangaLens", category: "pipeline")
 
@@ -58,6 +59,17 @@ struct ContentView: View {
         }
         .translationTask(configuration) { @MainActor translationSession in
             await performTranslation(translationSession)
+        }
+        .onOpenURL { url in
+            guard SafariBridge.isOpenURL(url) else { return }
+            Task { await consumePendingSafariJob(fromURL: true) }
+        }
+        .onAppear {
+            Task { await consumePendingSafariJob(fromURL: false) }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            Task { await consumePendingSafariJob(fromURL: false) }
         }
     }
 
@@ -189,6 +201,7 @@ struct ContentView: View {
 
     private func requestCapture() {
         addressFocused = false
+        session.endSafariJob()
         isCapturing = true
         captureToken = UUID()
     }
@@ -200,7 +213,7 @@ struct ContentView: View {
     }
 
     private func viewportSettled() {
-        guard session.autoEnabled else { return }
+        guard session.autoEnabled, session.safariContext == nil else { return }
         addressFocused = false
         isCapturing = true
         captureToken = UUID()
@@ -214,6 +227,11 @@ struct ContentView: View {
         switch result {
         case .ready(let capture):
             isCapturing = false
+            // A settle that was already in flight must not replace the Safari snapshot.
+            guard session.safariContext == nil else {
+                log("ignored in-app snapshot while Safari capture is active")
+                return
+            }
             session.noteSnapshot(capture)
             let image = capture.image
             let width = Int(image.size.width.rounded())
@@ -431,6 +449,60 @@ struct ContentView: View {
     private func presentAlert(title: String, message: String) {
         alertTitle = title
         alertMessage = message
+    }
+
+    private func consumePendingSafariJob(fromURL: Bool) async {
+        var loaded = SafariJobStore.peekPending()
+        if loaded == nil, fromURL {
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            loaded = SafariJobStore.peekPending()
+        }
+        guard let loaded else {
+            if fromURL {
+                presentAlert(
+                    title: "没有接到画面",
+                    message: "Safari 扩展还没有把这一屏放进共享位置。回到 Safari，再点一次「翻译可视区域」。如果提示走了剪贴板，中途不要复制别的内容。"
+                )
+            }
+            return
+        }
+        guard session.claimSafariJob(loaded.manifest.id) else { return }
+
+        let manifest = loaded.manifest
+        let context = SafariPageContext(
+            jobID: manifest.id,
+            pageURL: manifest.pageURL,
+            cssWidth: manifest.cssWidth,
+            cssHeight: manifest.cssHeight,
+            anchors: manifest.anchors,
+            channel: manifest.channel
+        )
+        guard let image = SafariPageImage.forOCR(
+            jpeg: loaded.jpeg,
+            cssWidth: manifest.cssWidth,
+            cssHeight: manifest.cssHeight
+        ) else {
+            session.beginSafariJob(context)
+            session.fail("Safari 传来的画面无法读取。回到 Safari 再截一次。")
+            return
+        }
+
+        if let language = SourceLanguage(rawValue: manifest.language) {
+            session.sourceLanguage = language
+        }
+        let capture = ViewportCapture(
+            image: image,
+            pageURL: manifest.pageURL,
+            contentOffset: .zero,
+            zoomScale: 1,
+            viewportSize: image.size
+        )
+        session.beginSafariJob(context)
+        session.noteSnapshot(capture)
+        let width = Int(image.size.width.rounded())
+        let height = Int(image.size.height.rounded())
+        log("safari viewport \(width) × \(height) pt, channel \(manifest.channel)")
+        await runPipeline(capture: capture, bypassCache: false)
     }
 
     private func log(_ message: String) {

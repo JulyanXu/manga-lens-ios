@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Personal Team 签不上 App Groups。签不上时，把这个文件从 MangaLens
+	  target 的 Code Signing Entitlements 里去掉。扩展会改用本机剪贴板。见 README。
+	  改了 Bundle ID 时，这里的 group 也要改成你自己的，并和 SafariBridge.appGroupID、
+	  扩展的 entitlements 保持一致。
+	-->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.julyanxu.MangaLens</string>
+	</array>
+</dict>
+</plist>
