@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  M1 是通用应用内浏览器，要打开任意 http/https 页面，所以允许 ATS 任意加载。
+	  不设置 WKAppBoundDomains，也不按站点做白名单或适配器。
+	  其余 Bundle / 启动屏 / 方向键由 GENERATE_INFOPLIST_FILE 合并进来。
+	-->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>
