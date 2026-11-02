@@ -14,14 +14,11 @@ struct ContentView: View {
     @State private var alertMessage: String?
     @State private var configuration: TranslationSession.Configuration?
     @State private var armedLanguageKey: String?
+    @State private var pageCache = PageTranslationCache()
     @StateObject private var session = PageSession()
     @FocusState private var addressFocused: Bool
 
     private let logger = Logger(subsystem: "com.julyanxu.MangaLens", category: "pipeline")
-
-    private var isBusy: Bool {
-        isCapturing || session.isBusy
-    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,14 +29,20 @@ struct ContentView: View {
                     url: pageURL,
                     loadID: loadID,
                     captureToken: captureToken,
+                    liveAnchors: session.liveAnchors,
+                    showsLiveOverlay: session.displayMode == .live,
+                    autoEnabled: session.autoEnabled,
                     onLoadingChange: { isLoading = $0 },
-                    onCapture: handleCapture
+                    onCapture: handleCapture,
+                    onNavigationStarted: navigationStarted,
+                    onViewportSettled: viewportSettled
                 )
                 if isLoading {
                     ProgressView()
                         .padding(10)
                         .background(.ultraThinMaterial, in: Capsule())
                         .padding(.top, 12)
+                        .allowsHitTesting(false)
                 }
             }
         }
@@ -73,7 +76,20 @@ struct ContentView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .disabled(isBusy)
+                .disabled(session.isBusy)
+            }
+
+            HStack(spacing: 12) {
+                Toggle("自动", isOn: $session.autoEnabled)
+                    .font(.subheadline)
+                    .fixedSize()
+                Picker("显示", selection: $session.displayMode) {
+                    ForEach(OverlayPresentation.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .accessibilityLabel("译文显示方式")
             }
 
             HStack(spacing: 8) {
@@ -95,7 +111,6 @@ struct ContentView: View {
 
                 Button("前往", action: openAddress)
                     .buttonStyle(.bordered)
-                    .disabled(isBusy)
             }
 
             HStack(spacing: 8) {
@@ -105,16 +120,16 @@ struct ContentView: View {
                         .minimumScaleFactor(0.8)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(isBusy)
+                .disabled(isCapturing)
 
                 Button(action: rerunTranslation) {
                     Text("重新翻译")
                         .lineLimit(1)
                 }
                 .buttonStyle(.bordered)
-                .disabled(session.snapshot == nil || isBusy)
+                .disabled(session.lastCapture == nil || session.isBusy)
 
-                if isBusy {
+                if isCapturing || session.isBusy {
                     ProgressView()
                         .controlSize(.small)
                 }
@@ -135,15 +150,15 @@ struct ContentView: View {
                                     .stroke(Color.secondary.opacity(0.35), lineWidth: 1)
                             }
                     }
-                    .accessibilityLabel("查看译文")
-                    .disabled(session.isBusy)
+                    .accessibilityLabel("打开截图预览")
                 }
             }
 
             Text(session.statusMessage)
                 .font(.caption)
                 .foregroundStyle(session.phase == .failed ? Color.red : Color.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, minHeight: 32, alignment: .topLeading)
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
@@ -179,42 +194,78 @@ struct ContentView: View {
     }
 
     private func rerunTranslation() {
-        guard session.snapshot != nil, !isBusy else { return }
+        guard let capture = session.lastCapture, !session.isBusy else { return }
         addressFocused = false
-        session.beginRecognition()
-        Task { await runPipeline() }
+        Task { await runPipeline(capture: capture, bypassCache: true) }
     }
 
-    private func handleCapture(_ result: Result<UIImage, Error>) {
-        isCapturing = false
+    private func viewportSettled() {
+        guard session.autoEnabled else { return }
+        addressFocused = false
+        isCapturing = true
+        captureToken = UUID()
+    }
+
+    private func navigationStarted() {
+        session.pageWillChange()
+    }
+
+    private func handleCapture(_ result: ViewportCaptureResult) {
         switch result {
-        case .success(let image):
-            session.noteSnapshot(image)
+        case .ready(let capture):
+            isCapturing = false
+            session.noteSnapshot(capture)
+            let image = capture.image
             let width = Int(image.size.width.rounded())
             let height = Int(image.size.height.rounded())
             let pixelsW = Int((image.size.width * image.scale).rounded())
             let pixelsH = Int((image.size.height * image.scale).rounded())
-            let line = "[MangaLens] visible viewport \(width) × \(height) pt, \(pixelsW) × \(pixelsH) px, scale \(image.scale)"
-            print(line)
-            logger.info("\(line, privacy: .public)")
-            Task { await runPipeline() }
-        case .failure(let error):
-            let line = "[MangaLens] visible snapshot failed: \(error.localizedDescription)"
-            print(line)
-            logger.error("\(line, privacy: .public)")
+            log("visible viewport \(width) × \(height) pt, \(pixelsW) × \(pixelsH) px, scale \(image.scale)")
+            Task { await runPipeline(capture: capture, bypassCache: false) }
+        case .skipped:
+            isCapturing = false
+            log("snapshot skipped because the page moved")
+        case .failed(let error):
+            isCapturing = false
+            log("visible snapshot failed: \(error.localizedDescription)")
             presentAlert(title: "截取失败", message: error.localizedDescription)
         }
     }
 
-    private func runPipeline() async {
-        guard let image = session.snapshot else { return }
+    private func runPipeline(capture: ViewportCapture, bypassCache: Bool) async {
         let language = session.sourceLanguage
         session.beginRecognition()
+        let generation = session.mailbox.generation
+
+        if !bypassCache,
+           let fingerprint = ImageFingerprint.dHash(capture.image),
+           let hit = pageCache.lookup(
+               url: capture.pageURL,
+               language: language,
+               fingerprint: fingerprint,
+               contentOffset: capture.contentOffset,
+               viewportSize: capture.viewportSize
+           ) {
+            guard session.mailbox.generation == generation else {
+                log("dropped stale cache hit")
+                return
+            }
+            let lines = fitted(hit.lines, from: hit.snapshotSize, to: capture.image.size)
+            session.applyResult(lines: lines, capture: capture, cacheHit: true)
+            showPreviewIfNeeded()
+            log("cache hit hamming=\(hit.distance) entries=\(pageCache.count)")
+            return
+        }
 
         do {
-            let recognized = try await TextRecognizer.recognize(image: image, language: language)
+            let recognized = try await TextRecognizer.recognize(image: capture.image, language: language)
+            guard session.mailbox.generation == generation else {
+                log("dropped stale OCR")
+                return
+            }
             guard !recognized.isEmpty else {
                 session.fail("没有识别到文字。可以换「原文」语言，或换一页再截。")
+                showPreviewIfNeeded()
                 log("OCR found no text (\(language.rawValue))")
                 return
             }
@@ -223,7 +274,9 @@ struct ContentView: View {
 
             switch await languagePackStatus(for: language) {
             case .unsupported:
+                guard session.mailbox.generation == generation else { return }
                 session.fail("这台系统不能把\(language.title)译成简体中文。请换语言，或确认系统版本是 iOS 18 及以上。")
+                showPreviewIfNeeded()
                 return
             case .needsDownload:
                 session.markNeedsDownload()
@@ -231,13 +284,17 @@ struct ContentView: View {
                 break
             }
 
-            session.mailbox.generation += 1
-            session.mailbox.lines = recognized
-            session.mailbox.sourceLanguage = language
+            guard session.mailbox.generation == generation else {
+                log("dropped stale OCR before translation")
+                return
+            }
+            session.stageTranslation(lines: recognized, capture: capture, language: language)
             session.markTranslating()
             armTranslation(for: language)
         } catch {
+            guard session.mailbox.generation == generation else { return }
             session.fail("识别失败：\(error.localizedDescription)")
+            showPreviewIfNeeded()
             log("OCR failed: \(error.localizedDescription)")
         }
     }
@@ -261,7 +318,8 @@ struct ContentView: View {
     private func performTranslation(_ translationSession: TranslationSession) async {
         let generation = session.mailbox.generation
         let recognized = session.mailbox.lines
-        guard generation > 0, !recognized.isEmpty else { return }
+        let capture = session.pendingCapture
+        guard generation > 0, !recognized.isEmpty, let capture else { return }
 
         do {
             // `prepareTranslation()` needs a known source. Automatic mode passes
@@ -276,15 +334,57 @@ struct ContentView: View {
                 )
             }
             let responses = try await translationSession.translations(from: requests)
-            guard session.mailbox.generation == generation else { return }
+            guard session.mailbox.generation == generation else {
+                log("dropped stale translation")
+                return
+            }
 
             let translated = match(recognized: recognized, responses: responses)
-            session.applyTranslations(translated)
-            log("translated \(translated.count) lines to zh-Hans")
+            session.applyResult(lines: translated, capture: capture, cacheHit: false)
+            showPreviewIfNeeded()
+            if let fingerprint = ImageFingerprint.dHash(capture.image) {
+                pageCache.store(
+                    url: capture.pageURL,
+                    language: session.mailbox.sourceLanguage,
+                    fingerprint: fingerprint,
+                    capture: capture,
+                    lines: translated
+                )
+            }
+            log("translated \(translated.count) lines to zh-Hans, cache=\(pageCache.count)")
         } catch {
             guard session.mailbox.generation == generation else { return }
             session.fail(translationFailureMessage(error))
+            showPreviewIfNeeded()
             log("translation failed: \(error.localizedDescription)")
+        }
+    }
+
+    private func showPreviewIfNeeded() {
+        if session.displayMode == .preview {
+            session.isShowingResult = true
+        }
+    }
+
+    private func fitted(_ lines: [TranslatedLine], from source: CGSize, to target: CGSize) -> [TranslatedLine] {
+        guard source.width > 1, source.height > 1 else { return lines }
+        let scaleX = target.width / source.width
+        let scaleY = target.height / source.height
+        if abs(scaleX - 1) < 0.02, abs(scaleY - 1) < 0.02 {
+            return lines
+        }
+        return lines.map { line in
+            TranslatedLine(
+                id: line.id,
+                sourceText: line.sourceText,
+                translatedText: line.translatedText,
+                rect: CGRect(
+                    x: line.rect.minX * scaleX,
+                    y: line.rect.minY * scaleY,
+                    width: line.rect.width * scaleX,
+                    height: line.rect.height * scaleY
+                )
+            )
         }
     }
 
