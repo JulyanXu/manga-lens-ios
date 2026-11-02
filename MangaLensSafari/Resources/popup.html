@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>翻译当前页</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <strong>Manga Lens</strong>
+    <p>翻译 Safari 里当前看见的这一屏</p>
+  </header>
+  <p class="label">原文</p>
+  <div class="languages" id="languages" role="group" aria-label="原文语言"></div>
+  <button id="translate" type="button">翻译可视区域</button>
+  <a id="open-app" class="hidden" href="mangalens://safari">打开 Manga Lens</a>
+  <p id="status">点上面的按钮，截取现在看见的画面。</p>
+  <button id="show" type="button">在页面上显示译文</button>
+  <button id="clear" type="button" class="quiet">清除页面译文</button>
+  <p class="fine">只在你点翻译时读取这一屏。识别和翻译在这台 iPhone 上完成，不上传。iOS 上不能把译文稳定地嵌进所有阅读器，所以先在 App 里译，再贴回这一页。</p>
+  <script src="popup.js"></script>
+</body>
+</html>

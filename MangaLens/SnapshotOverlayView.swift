@@ -103,7 +103,7 @@ struct SnapshotResultSheet: View {
                     .frame(maxHeight: 220)
                 }
             }
-            .navigationTitle("译文")
+            .navigationTitle(session.safariContext == nil ? "译文" : "Safari 译文")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

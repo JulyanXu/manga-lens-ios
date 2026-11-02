@@ -1,13 +1,14 @@
 # Manga Lens
 
-iPhone 上的漫画网页即时翻译。当前做到 **M1 + M2 + M3**：
+iPhone 上的漫画网页即时翻译。当前做到 **M1 + M2 + M3 + M4**：
 
 - 应用内浏览器打开任意网页，截取可视区域
 - 设备上的 Vision 识别文字，系统 Translation 译成简体中文
 - 滚动停稳或打开新页面后自动再跑一遍
 - 译文可以盖在正在看的网页上，并跟着滚动走
+- 也可以在系统 Safari 里点扩展，把当前这一屏交给同一条管道，再把中文贴回页面
 
-工程是在没有 Xcode 的 Linux 环境里整理的，**没有编译，也没有打出 IPA**。仓库里也没有 Mac CI。请在 Mac 上用 Xcode 打开后第一次构建。
+工程是在没有 Xcode 的 Linux 环境里整理的，**没有编译，也没有打出 IPA**。仓库里也没有 Mac CI。M4 的 Safari 扩展同样只是按 Xcode 16 的打包方式写好的源码。请在 Mac 上打开工程后第一次构建，并在真机上确认扩展开关、截图和译文位置。
 
 ## 环境
 
@@ -22,9 +23,9 @@ iPhone 上的漫画网页即时翻译。当前做到 **M1 + M2 + M3**：
 1. 克隆这个仓库。
 2. 双击打开根目录的 `MangaLens.xcodeproj`。不需要先装 XcodeGen。
 3. 左侧选中 **MangaLens** target，打开 **Signing & Capabilities**。
-4. 保持 **Automatically manage signing** 打开，**Team** 选你的 **Personal Team**（免费 Apple ID 即可）。
-5. 如果报 Bundle Identifier 已被占用，把 `com.julyanxu.MangaLens` 改成只属于你的 ID。
-6. 顶部方案选 **MangaLens**，设备选一台 **iOS 18+ 真机**。按 Run。
+4. 保持 **Automatically manage signing** 打开，**Team** 选你的 **Personal Team**（免费 Apple ID 即可）。MangaLens 和 MangaLensSafari 两个 target 用同一个 Team。
+5. 如果报 Bundle Identifier 已被占用，把 `com.julyanxu.MangaLens` 改成只属于你的 ID，扩展改成同一个前缀加上 `.SafariExtension`。App Group 标识也要一起改，见下面 M4。
+6. 顶部方案选 **MangaLens**（不要选成只跑扩展），设备选一台 **iOS 18+ 真机**。按 Run。扩展会嵌在 App 里一起装上。Personal Team 如果被 App Groups 拦住，先看 M4 里怎么关掉这项能力。
 7. 默认打开 `https://www.apple.com`。地址栏可以换成任意网页，点「前往」。没写协议时会自动补 `https://`。任意 http/https 都可以，没有站点适配器。
 8. 「原文」默认是 **日语**，也可以选韩语、英语或自动。目标语言固定是简体中文。
 9. 「自动」默认开着。页面打开后，或你滚动停下来大约半秒，会自己截取、识别、翻译。「自动」关掉之后，只有「截取并翻译」会跑。
@@ -44,7 +45,7 @@ iPhone 上的漫画网页即时翻译。当前做到 **M1 + M2 + M3**：
 
 ## 个人团队签名，大约 7 天
 
-免费 Apple ID 的 Personal Team 装到真机上的描述文件大约 **7 天**后过期。过期后图标还在，点开却打不开。用同一台 Mac 打开这个工程再 Run 一次，就会重新签名，不需要付费的 Apple Developer Program。
+免费 Apple ID 的 Personal Team 装到真机上的描述文件大约 **7 天**后过期。过期后图标还在，点开却打不开。Safari 扩展装在这个 App 里面，会一起失效。用同一台 Mac 打开这个工程再 Run 一次，就会重新签名，不需要付费的 Apple Developer Program。
 
 模拟器不受这 7 天限制。
 
@@ -116,27 +117,101 @@ Vision 在模拟器里一般可以识别。`TranslationSession` **在模拟器�
 - 任意 `http` / `https`。`Info.plist` 打开了 `NSAllowsArbitraryLoads`，没有 `WKAppBoundDomains`，也没有站点适配器。
 - 截图只包含 WebView 当前可视区域，不是整页，也不是整个窗口。实现是 `WKWebView.takeSnapshot(with:)`，`rect` 为 WebView 的 `bounds`。
 
+## M4：在系统 Safari 里翻译这一屏
+
+应用内浏览器还是原来的用法。M4 多了一个入口：人已经在系统 Safari 里看漫画时，不用把网址再贴进 App。
+
+这条路径**没有在这台 Linux 上编译过**。下面是按 Apple 的 Safari Web Extension 打包方式写的，需要你在 Mac 上用 Xcode 16 编到真机后再确认。
+
+### 为什么是这样接
+
+iPhone 上的 Safari 扩展是三块分开的沙盒：
+
+1. 弹出页和内容脚本，跑在 Safari 里
+2. `MangaLensSafari.appex` 里的 `SafariWebExtensionHandler`，只负责把画面存下来
+3. 主 App，跑原来的 Vision 和 `translationTask`
+
+内容脚本不能直接 `sendNativeMessage`。工具栏弹出页把请求交给后台 service worker，再由它发给 native handler。iOS 的后台页面不能常驻，所以监听写在脚本顶层。
+
+识别和翻译仍放在主 App 里。iOS 18 的 `TranslationSession` 要靠 SwiftUI 的 `translationTask` 才会弹出语言包下载，扩展的 native handler 没有这个界面。语言包是系统级的，在 App 里装过一次，以后同一台手机还能用。
+
+画面从哪来，按这个顺序：
+
+1. 优先 `tabs.captureVisibleTab`，截 Safari 当前可视区域。iOS 15 起有这个接口，不需要 `webRequest`。地址栏收起时，有的系统版本会把画面顶部裁掉，框会跟着偏一点。
+2. 截图失败时，内容脚本去读视口里的 `<img>`、`<canvas>` 和少量 `background-image`。跨域图画进 canvas 会脏，就改由扩展去 `fetch` 原图。画在跨域 canvas 里、又没有截图的页，这一步会空。
+3. JPEG 写到 App Group `group.com.julyanxu.MangaLens`。没有这个共享容器时，写到**本机**剪贴板（`localOnly`，大约 15 分钟，不同步到别的设备）。
+4. 试着用 `mangalens://safari` 打开主 App。这个 `open` 是 Today / iMessage 扩展的正式接口，Safari 扩展上不保证成功。弹出页里还有一个真链接，或者你自己切到 Manga Lens。App 一到前台就会读刚放下的那一屏。
+5. App 把图拉回 CSS 视口大小，走原来的 OCR、缓存和简体中文翻译，并打开截图预览。框写回共享位置。
+6. 回到 Safari，再点「在页面上显示译文」。能对上某张图或某个文字块的标签，会跟着那个元素走（包括页内滚动）。对不上的，按当时的屏幕位置摆，主滚动一超过约 24pt 就藏起来。
+
+不会在你滚动时自动再跑。那会不停把你从 Safari 里拽进 App。也没有按网站写选择器。
+
+### 在 iPhone 上打开扩展
+
+1. 用上面的步骤把 **MangaLens** 装到 iOS 18+ 真机。模拟器里 `TranslationSession` 仍然不可用。
+2. 打开 **设置 → Safari → 扩展**（有的系统版本在 **设置 → App → Safari → 扩展**）。
+3. 打开 **Manga Lens**。
+4. 网站权限选允许。Safari 按网站询问，这是系统的选择，不是工程漏了权限。`manifest.json` 要的是全部 `http` / `https`，外加 `nativeMessaging`、`activeTab`、`scripting`、`storage`。
+5. 改完权限后，把正在看的网页关掉重开一次，内容脚本才会注入。
+6. 在 Safari 里打开漫画页。点地址栏的扩展按钮（拼图），点 **Manga Lens**。弹出页标题是「翻译当前页」。
+7. 原文默认 **日语**，也可以选韩语、英语或自动。目标语言仍是简体中文。点 **翻译可视区域**。
+8. 若系统问「打开 Manga Lens？」，点打开。没有自动跳过去时，点弹出页里的 **打开 Manga Lens**，或从主屏幕自己打开 App。
+9. 第一次某种语言会要语言包，点允许。这是系统界面。
+10. 译完后回到 Safari，再点扩展里的 **在页面上显示译文**。**清除页面译文** 只去掉这些标签。
+
+免费 Personal Team 的描述文件大约 **7 天**过期。扩展装在 App 里面，会一起失效。用同一台 Mac 再 Run 一次即可。
+
+### Personal Team 和 App Group
+
+两个 target 的 entitlements 都写了 App Group `group.com.julyanxu.MangaLens`。付费的 Apple Developer Program 可以签这项，Xcode 会自动注册这个 group。两个 target 必须是同一个 Team。扩展的 Bundle ID 必须是主 App 的加上后缀，默认 `com.julyanxu.MangaLens.SafariExtension`。
+
+免费 Personal Team **不能**签 App Groups。Xcode 会报类似 `Personal development teams do not support the App Groups capability`。这时：
+
+1. 选中 **MangaLens** target → **Signing & Capabilities**，删掉 App Groups。或者把 Build Settings 里的 **Code Signing Entitlements** 清空。
+2. 对 **MangaLensSafari** 做同样的事。
+3. 再 Run。
+
+签不上时，扩展会改用剪贴板把这一屏交给 App。弹出页会写明「这次没有 App Group」。翻译完成前不要复制别的内容。不要为了这条路径去买开发者账号，除非你不想动剪贴板。
+
+改了 Bundle ID 的话，App Group 也要改成你自己的，三处保持一致：两个 entitlements，以及 `SafariBridge.appGroupID`。
+
+### iOS 上的 Safari 做不到、或做不稳的
+
+- 没有 `webRequest`，也不能拦截请求。manifest 里没有这项。
+- `document_start` 在「预载最常点选项目」打开时不可靠。这里用 `document_idle`，而且只在你点按钮之后做事。
+- 没有右键菜单。入口是工具栏弹出页。
+- 扩展不能稳定地把主 App 拉到前台。文件先写好，你再打开 App 也读得到。
+- 不能截整页，只能截可视区域。地址栏动画可能裁掉顶部。
+- 不能把译文直接画进 WebKit 的合成层。贴回去的是页面上的标签，不是应用内那种跟着 `WKWebView.scrollView` 的 UIView。iframe 里的图会出现在截图里，但标签够不着 frame 里面的元素。
+- 滚动停稳后不会自动再识别。新滚进屏幕的区域要再点一次。
+- 系统把网页进程回收后，元素上的标记会丢。标签退回当时的屏幕坐标，滚动后就不准，再翻一次即可。
+- 扩展里弹不出语言包下载。要先在主 App 里允许下载。
+
 ## 还没做
 
-- 不做 Safari Web Extension。
 - 不调用云端 OCR 或机器翻译。
 - 不上架 App Store。
 - 不给每个网站写选择器或翻页脚本。
+- 不做 Mac 版。
+- Safari 里不会在滚动停稳后自动再识别。
 
 ## 目录
 
 | 路径 | 作用 |
 | --- | --- |
-| `MangaLens.xcodeproj` | 直接用 Xcode 打开的工程 |
+| `MangaLens.xcodeproj` | 直接用 Xcode 打开的工程，含 App 和 Safari 扩展 |
 | `project.yml` | 同一工程的 XcodeGen 描述，部署目标 iOS 18 |
 | `MangaLens/MangaLensApp.swift` | `@main` 入口 |
-| `MangaLens/ContentView.swift` | 地址栏、语言、自动开关、显示方式、`translationTask` |
+| `MangaLens/ContentView.swift` | 地址栏、语言、自动开关、显示方式、`translationTask`，以及 Safari 交来的这一屏 |
 | `MangaLens/BrowserWebView.swift` | `WKWebView`、截图、停稳计时、内层滚动通知 |
-| `MangaLens/LiveTranslationOverlay.swift` | 盖在网页上、随 contentOffset 移动的标签 |
+| `MangaLens/LiveTranslationOverlay.swift` | 盖在应用内网页上、随 contentOffset 移动的标签 |
 | `MangaLens/PageTranslationCache.swift` | 视口描述、dHash、最多 20 条的 LRU |
 | `MangaLens/SourceLanguage.swift` | 日语 / 韩语 / 英语 / 自动，以及语言包是否可装 |
 | `MangaLens/TextRecognizer.swift` | Vision OCR，框换算到图片坐标 |
 | `MangaLens/PageSession.swift` | 这一次截图的进度、译文和实时标签 |
 | `MangaLens/SnapshotOverlayView.swift` | 截图预览里的中文叠加 |
-| `MangaLens/Info.plist` | 允许加载任意 http(s) |
+| `MangaLens/SafariJob.swift` | App 和扩展共用的交接格式：App Group，不行就用剪贴板 |
+| `MangaLens/Info.plist` | 允许加载任意 http(s)，以及 `mangalens://` |
+| `MangaLens/MangaLens.entitlements` | App Group。Personal Team 签不上就去掉 |
 | `MangaLens/Assets.xcassets` | 图标和强调色 |
+| `MangaLensSafari/` | Safari Web Extension：manifest、弹出页、内容脚本、native handler |

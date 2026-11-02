@@ -17,6 +17,19 @@
 		A1B0A5E00000000000000008 /* SnapshotOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000000A /* SnapshotOverlayView.swift */; };
 		A1B0A5E00000000000000009 /* PageTranslationCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000000B /* PageTranslationCache.swift */; };
 		A1B0A5E0000000000000000A /* LiveTranslationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000000C /* LiveTranslationOverlay.swift */; };
+		A1B0A5E0000000000000000B /* SafariJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000000D /* SafariJob.swift */; };
+		A1B0A5E00000000000000021 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000032 /* SafariWebExtensionHandler.swift */; };
+		A1B0A5E00000000000000022 /* SafariJob.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000000D /* SafariJob.swift */; };
+		A1B0A5E00000000000000023 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000035 /* manifest.json */; };
+		A1B0A5E00000000000000024 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000036 /* background.js */; };
+		A1B0A5E00000000000000025 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000037 /* content.js */; };
+		A1B0A5E00000000000000026 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000038 /* popup.html */; };
+		A1B0A5E00000000000000027 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000039 /* popup.js */; };
+		A1B0A5E00000000000000028 /* popup.css in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000003A /* popup.css */; };
+		A1B0A5E00000000000000029 /* icon-48.png in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000003B /* icon-48.png */; };
+		A1B0A5E0000000000000002A /* icon-96.png in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000003C /* icon-96.png */; };
+		A1B0A5E0000000000000002B /* icon-128.png in Resources */ = {isa = PBXBuildFile; fileRef = A1F11E00000000000000003D /* icon-128.png */; };
+		A1B0A5E0000000000000002C /* MangaLensSafari.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1F11E000000000000000031 /* MangaLensSafari.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,10 +45,56 @@
 		A1F11E00000000000000000A /* SnapshotOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotOverlayView.swift; sourceTree = "<group>"; };
 		A1F11E00000000000000000B /* PageTranslationCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageTranslationCache.swift; sourceTree = "<group>"; };
 		A1F11E00000000000000000C /* LiveTranslationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTranslationOverlay.swift; sourceTree = "<group>"; };
+		A1F11E00000000000000000D /* SafariJob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariJob.swift; sourceTree = "<group>"; };
+		A1F11E00000000000000000E /* MangaLens.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MangaLens.entitlements; sourceTree = "<group>"; };
+		A1F11E000000000000000031 /* MangaLensSafari.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MangaLensSafari.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1F11E000000000000000032 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		A1F11E000000000000000033 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1F11E000000000000000034 /* MangaLensSafari.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MangaLensSafari.entitlements; sourceTree = "<group>"; };
+		A1F11E000000000000000035 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		A1F11E000000000000000036 /* background.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = background.js; sourceTree = "<group>"; };
+		A1F11E000000000000000037 /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = content.js; sourceTree = "<group>"; };
+		A1F11E000000000000000038 /* popup.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = popup.html; sourceTree = "<group>"; };
+		A1F11E000000000000000039 /* popup.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = popup.js; sourceTree = "<group>"; };
+		A1F11E00000000000000003A /* popup.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = popup.css; sourceTree = "<group>"; };
+		A1F11E00000000000000003B /* icon-48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-48.png"; sourceTree = "<group>"; };
+		A1F11E00000000000000003C /* icon-96.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-96.png"; sourceTree = "<group>"; };
+		A1F11E00000000000000003D /* icon-128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "icon-128.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXContainerItemProxy section */
+		A1DE90000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1B0EC000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1A9E7000000000000000011;
+			remoteInfo = MangaLensSafari;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1A9E7000000000000000005 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1B0A5E0000000000000002C /* MangaLensSafari.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A1A9E7000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1A9E7000000000000000013 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -49,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				A1C0DE000000000000000002 /* MangaLens */,
+				A1C0DE000000000000000004 /* MangaLensSafari */,
 				A1C0DE000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -65,8 +125,10 @@
 				A1F11E00000000000000000A /* SnapshotOverlayView.swift */,
 				A1F11E00000000000000000B /* PageTranslationCache.swift */,
 				A1F11E00000000000000000C /* LiveTranslationOverlay.swift */,
+				A1F11E00000000000000000D /* SafariJob.swift */,
 				A1F11E000000000000000004 /* Assets.xcassets */,
 				A1F11E000000000000000005 /* Info.plist */,
+				A1F11E00000000000000000E /* MangaLens.entitlements */,
 			);
 			path = MangaLens;
 			sourceTree = "<group>";
@@ -75,8 +137,44 @@
 			isa = PBXGroup;
 			children = (
 				A1F11E000000000000000006 /* MangaLens.app */,
+				A1F11E000000000000000031 /* MangaLensSafari.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A1C0DE000000000000000004 /* MangaLensSafari */ = {
+			isa = PBXGroup;
+			children = (
+				A1F11E000000000000000032 /* SafariWebExtensionHandler.swift */,
+				A1F11E000000000000000033 /* Info.plist */,
+				A1F11E000000000000000034 /* MangaLensSafari.entitlements */,
+				A1C0DE000000000000000005 /* Resources */,
+			);
+			path = MangaLensSafari;
+			sourceTree = "<group>";
+		};
+		A1C0DE000000000000000005 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A1F11E000000000000000035 /* manifest.json */,
+				A1F11E000000000000000036 /* background.js */,
+				A1F11E000000000000000037 /* content.js */,
+				A1F11E000000000000000038 /* popup.html */,
+				A1F11E000000000000000039 /* popup.js */,
+				A1F11E00000000000000003A /* popup.css */,
+				A1C0DE000000000000000006 /* images */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A1C0DE000000000000000006 /* images */ = {
+			isa = PBXGroup;
+			children = (
+				A1F11E00000000000000003B /* icon-48.png */,
+				A1F11E00000000000000003C /* icon-96.png */,
+				A1F11E00000000000000003D /* icon-128.png */,
+			);
+			path = images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -89,15 +187,34 @@
 				A1A9E7000000000000000002 /* Sources */,
 				A1A9E7000000000000000003 /* Frameworks */,
 				A1A9E7000000000000000004 /* Resources */,
+				A1A9E7000000000000000005 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A1DE90000000000000000001 /* PBXTargetDependency */,
 			);
 			name = MangaLens;
 			productName = MangaLens;
 			productReference = A1F11E000000000000000006 /* MangaLens.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A1A9E7000000000000000011 /* MangaLensSafari */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1C0F1600000000000000009 /* Build configuration list for PBXNativeTarget "MangaLensSafari" */;
+			buildPhases = (
+				A1A9E7000000000000000012 /* Sources */,
+				A1A9E7000000000000000013 /* Frameworks */,
+				A1A9E7000000000000000014 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MangaLensSafari;
+			productName = MangaLensSafari;
+			productReference = A1F11E000000000000000031 /* MangaLensSafari.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -111,6 +228,9 @@
 				ORGANIZATIONNAME = JulyanXu;
 				TargetAttributes = {
 					A1A9E7000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A1A9E7000000000000000011 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -129,6 +249,7 @@
 			projectRoot = "";
 			targets = (
 				A1A9E7000000000000000001 /* MangaLens */,
+				A1A9E7000000000000000011 /* MangaLensSafari */,
 			);
 		};
 /* End PBXProject section */
@@ -139,6 +260,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B0A5E00000000000000004 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1A9E7000000000000000014 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B0A5E00000000000000023 /* manifest.json in Resources */,
+				A1B0A5E00000000000000024 /* background.js in Resources */,
+				A1B0A5E00000000000000025 /* content.js in Resources */,
+				A1B0A5E00000000000000026 /* popup.html in Resources */,
+				A1B0A5E00000000000000027 /* popup.js in Resources */,
+				A1B0A5E00000000000000028 /* popup.css in Resources */,
+				A1B0A5E00000000000000029 /* icon-48.png in Resources */,
+				A1B0A5E0000000000000002A /* icon-96.png in Resources */,
+				A1B0A5E0000000000000002B /* icon-128.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -158,10 +295,28 @@
 				A1B0A5E00000000000000008 /* SnapshotOverlayView.swift in Sources */,
 				A1B0A5E00000000000000009 /* PageTranslationCache.swift in Sources */,
 				A1B0A5E0000000000000000A /* LiveTranslationOverlay.swift in Sources */,
+				A1B0A5E0000000000000000B /* SafariJob.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1A9E7000000000000000012 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B0A5E00000000000000021 /* SafariWebExtensionHandler.swift in Sources */,
+				A1B0A5E00000000000000022 /* SafariJob.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A1DE90000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1A9E7000000000000000011 /* MangaLensSafari */;
+			targetProxy = A1DE90000000000000000002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A1C0F1600000000000000001 /* Debug */ = {
@@ -305,6 +460,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
+				CODE_SIGN_ENTITLEMENTS = MangaLens/MangaLens.entitlements;
 				PRODUCT_BUNDLE_IDENTIFIER = com.julyanxu.MangaLens;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -337,6 +493,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				CODE_SIGN_ENTITLEMENTS = MangaLens/MangaLens.entitlements;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.julyanxu.MangaLens;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -344,6 +501,62 @@
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A1C0F1600000000000000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MangaLensSafari/MangaLensSafari.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MangaLensSafari/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Manga Lens";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.julyanxu.MangaLens.SafariExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A1C0F1600000000000000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = MangaLensSafari/MangaLensSafari.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MangaLensSafari/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Manga Lens";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.julyanxu.MangaLens.SafariExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -367,6 +580,15 @@
 			buildConfigurations = (
 				A1C0F1600000000000000003 /* Debug */,
 				A1C0F1600000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1C0F1600000000000000009 /* Build configuration list for PBXNativeTarget "MangaLensSafari" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1C0F1600000000000000007 /* Debug */,
+				A1C0F1600000000000000008 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
